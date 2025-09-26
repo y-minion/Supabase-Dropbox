@@ -25,7 +25,7 @@ export default function UI() {
       <FileDragDropZone />
 
       {/* 파일 이미지 섹션 */}
-      <DropboxImageList />
+      <DropboxImageList searchInput={searchInput} />
     </div>
   );
 }
