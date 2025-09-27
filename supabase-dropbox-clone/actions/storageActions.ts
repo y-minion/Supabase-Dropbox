@@ -39,3 +39,15 @@ export async function searchFile(search: string = "") {
 
   return data;
 }
+
+export async function deleteFile(fileName: string) {
+  const supabase = await createServerSupabaseClient();
+
+  const { data, error } = await supabase.storage
+    .from(process.env.NEXT_PUBLIC_STORAGE_BUCKET)
+    .remove([fileName]);
+
+  if (error) handleError(error);
+
+  return data;
+}
