@@ -1,9 +1,10 @@
 "use client";
 
-import { Button } from "@material-tailwind/react";
+import { Button, Spinner } from "@material-tailwind/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { uploadFile } from "actions/storageActions";
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
+import { useDropzone } from "react-dropzone";
 
 export default function FileDragDropZone() {
   const fileRef = useRef(null);
@@ -29,24 +30,30 @@ export default function FileDragDropZone() {
     },
   });
 
+  const onDrop = useCallback((acceptedFiles) => {
+    // Do something with the files -> 리액트 드랍존 라이브러리 사용 규칙
+    const file = acceptedFiles?.[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append("file", file);
+      uploadImageMutation.mutate(formData);
+    }
+  }, []);
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+
   return (
-    <form
-      onSubmit={async (e) => {
-        e.preventDefault();
-        const file = fileRef.current?.files?.[0];
-        if (file) {
-          const formData = new FormData();
-          formData.append("file", file);
-          uploadImageMutation.mutate(formData); //-> 근데 나중에 onSubmit 로직 action 속성으로 리팩토링 하기
-        }
-      }}
-      className="flex flex-col items-center w-full border-4 border-dotted border-indigo-700 py-20"
+    <div
+      {...getRootProps()}
+      className="flex flex-col items-center w-full border-4 border-dotted border-indigo-700 py-20 cursor-pointer"
     >
-      <input ref={fileRef} type="file" className="" />
-      <p>파일을 여기다 끌어다 놓거나 클릭하여 업로드 하세요</p>
-      <Button loading={uploadImageMutation.isPending} type="submit">
-        파일 업로드
-      </Button>
-    </form>
+      <input {...getInputProps()} />
+      {uploadImageMutation.isPending ? (
+        <Spinner />
+      ) : isDragActive ? (
+        <p>파일을 놓아주세요.</p>
+      ) : (
+        <p>파일을 여기에 끌어다 놓거나 클릭하여 업로드 하쇼</p>
+      )}
+    </div>
   );
 }
