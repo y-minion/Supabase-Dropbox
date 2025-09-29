@@ -23,6 +23,7 @@ export default function FileDragDropZone() {
         queryKey: ["images"],
         exact: false, // ["images"]로 시작하는 모든 쿼리를 무효화합니다.
       }); //쿼리클라이언트에 접근해 해당 키의 캐시를 초기화 한다.
+      console.log("업로드 성공");
     },
     onError: (error) => {
       console.error("파일 업로드 실패:", error);
@@ -32,14 +33,21 @@ export default function FileDragDropZone() {
 
   const onDrop = useCallback((acceptedFiles) => {
     // Do something with the files -> 리액트 드랍존 라이브러리 사용 규칙
-    const file = acceptedFiles?.[0];
-    if (file) {
+
+    if (acceptedFiles.length > 0) {
       const formData = new FormData();
-      formData.append("file", file);
+
+      // 입력된 여러개의 파일을 하나의 폼 데이터 객체에 반복해서 넣는다.
+      acceptedFiles.forEach((file) => {
+        formData.append(file.name, file);
+      });
       uploadImageMutation.mutate(formData);
     }
   }, []);
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    multiple: true, //멀티 파일의 옵션 설정
+  });
 
   return (
     <div
